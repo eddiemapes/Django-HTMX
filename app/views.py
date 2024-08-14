@@ -54,6 +54,13 @@ def add_film(request):
     # Return template fragment with user's films
     return render(request, 'partials/film-list.html', {'films': films})
 
+def delete_film(request, film_id):
+    # Remove the film from user's list
+    request.user.films.remove(film_id) 
+
+    films = request.user.films.all()
+    return render(request, 'partials/film-list.html', {'films': films})
+
     
 def check_username(request):
     username = request.POST.get('username')

@@ -13,6 +13,7 @@ urlpatterns = [
 htmx_urlpatterns = [
     path('check_username/', views.check_username, name='check_username'),
     path('add-film/', views.add_film, name='add-film'),
+    path('delete-film/<int:film_id>', views.delete_film, name='delete-film'),
 ]
 
 urlpatterns += htmx_urlpatterns
