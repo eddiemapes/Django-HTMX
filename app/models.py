@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.db.models.functions import Lower
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 
 # Create your models here.
@@ -104,4 +105,16 @@ class Film(models.Model):
 
     name = models.CharField(max_length=128, unique=True)
     users = models.ManyToManyField(User, related_name='films')
+    
+    class Meta:
+        ordering = [Lower('name')]
+        
+class UserFilms(models.Model):
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    film = models.ForeignKey(Film, on_delete=models.CASCADE)
+    order = models.PositiveSmallIntegerField()
+    
+    class Meta:
+        ordering = ['order']
 

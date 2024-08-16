@@ -5,6 +5,9 @@ from django.contrib.auth.models import User
 from django.urls import reverse_lazy
 from django.views.generic import FormView, TemplateView, ListView
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
+from django.contrib import messages
 
 from .forms import RegisterForm
 from .models import Film
@@ -38,28 +41,45 @@ class FilmList(ListView):
     def get_queryset(self):
         user = self.request.user
         return user.films.all()
-    
+
+
+@login_required
+@require_http_methods(['POST'])
 def add_film(request):
     # Get film name entered from form 
     name = request.POST.get('filmname')
     # Create film object with the entered name 
-    film = Film.objects.create(name=name)
+    
+    film = Film.objects.get_or_create(name=name)[0]
 
     # Add the user to the film 
     request.user.films.add(film)
 
     # Retrive all the user's films 
     films = request.user.films.all()
+    
+    messages.success(request, f"You've successfully added {name} to your list!")
 
     # Return template fragment with user's films
     return render(request, 'partials/film-list.html', {'films': films})
 
+@login_required
+@require_http_methods(['DELETE'])
 def delete_film(request, film_id):
+    
     # Remove the film from user's list
     request.user.films.remove(film_id) 
 
     films = request.user.films.all()
     return render(request, 'partials/film-list.html', {'films': films})
+
+def search_film(request):
+    search_text = request.POST.get('search')
+    
+    userfilms = request.user.films.all()
+    results = Film.objects.filter(name__icontains=search_text).exclude(name__in=userfilms.values_list('name', flat=True))
+    
+    return render(request, 'partials/search-results.html', {'results': results})
 
     
 def check_username(request):
@@ -68,3 +88,6 @@ def check_username(request):
         return HttpResponse('<div id="username-error" class="error">This username already exists</div>')
     else:
         return HttpResponse('<div id="username-error" class="success">This username is available</div>')
+    
+def clear(request):
+    return HttpResponse("")
