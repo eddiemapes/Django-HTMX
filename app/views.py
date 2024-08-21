@@ -1,5 +1,5 @@
 from django.http.response import HttpResponse, HttpResponsePermanentRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.models import User
 from django.urls import reverse_lazy
@@ -106,5 +106,24 @@ def sort(request):
         # userfilm.save()
         films.append(userfilm)
     UserFilms.objects.bulk_update(films, fields=['order'], batch_size=100)
+    
+    context = {
+        'userfilms': films
+    }
 
+    return render(request, 'partials/film-list.html', context)
+
+@login_required
+def detail(request, userfilm_id):
+    userfilm = get_object_or_404(UserFilms, id=userfilm_id)
+    
+    context = {
+        'userfilm': userfilm
+    }
+    return render(request, 'partials/film-detail.html', context)
+
+@login_required
+def films_partial(request):
+    films = UserFilms.objects.filter(user=request.user)
+    
     return render(request, 'partials/film-list.html', {'userfilms': films})
