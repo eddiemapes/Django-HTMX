@@ -127,3 +127,14 @@ def films_partial(request):
     films = UserFilms.objects.filter(user=request.user)
     
     return render(request, 'partials/film-list.html', {'userfilms': films})
+
+def upload_photo(request, userfilm_id):
+    userfilm = get_object_or_404(UserFilms, id=userfilm_id)
+    photo = request.FILES.get('photo')
+    
+    # Saving an image field 
+    userfilm.film.photo.save(photo.name, photo)
+    context = {
+        'userfilm': userfilm
+    }
+    return render(request, 'partials/film-detail.html', context)
